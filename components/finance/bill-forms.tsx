@@ -12,8 +12,12 @@ import { currentMonth, monthLabel, toMonthParam, today } from "@/lib/dates";
 
 import type { AccountOption, BillRow, CategoryOption, MemberOption } from "./types";
 
+export type BillPrefill = Partial<Omit<BillRow, "id" | "active" | "end_month">>;
+
+// `bill` edita uma conta fixa existente; `prefill` só sugere valores para uma nova.
 export function BillForm({
   bill,
+  prefill,
   accounts,
   categories,
   members,
@@ -21,6 +25,7 @@ export function BillForm({
   onDone,
 }: {
   bill?: BillRow;
+  prefill?: BillPrefill;
   accounts: AccountOption[];
   categories: CategoryOption[];
   members: MemberOption[];
@@ -28,7 +33,8 @@ export function BillForm({
   onDone: () => void;
 }) {
   const form = useActionForm(saveBill, { onSuccess: onDone });
-  const [kind, setKind] = useState<"entrada" | "saida">(bill?.kind ?? "saida");
+  const base = bill ?? prefill;
+  const [kind, setKind] = useState<"entrada" | "saida">(base?.kind ?? "saida");
   const [active, setActive] = useState(bill?.active ?? true);
 
   return (
@@ -53,7 +59,7 @@ export function BillForm({
           <TextInput
             id="bill-desc"
             name="description"
-            defaultValue={bill?.description}
+            defaultValue={base?.description}
             placeholder={kind === "saida" ? "Aluguel" : "Salário"}
             required
           />
@@ -61,10 +67,10 @@ export function BillForm({
 
         <div className="grid grid-cols-2 gap-4">
           <FormField label="Valor previsto" htmlFor="bill-amount" error={form.errorFor("amount")}>
-            <MoneyInput id="bill-amount" name="amount" defaultValue={bill?.amount} required />
+            <MoneyInput id="bill-amount" name="amount" defaultValue={base?.amount} required />
           </FormField>
           <FormField label="Dia do vencimento" htmlFor="bill-day" error={form.errorFor("due_day")}>
-            <DayInput id="bill-day" name="due_day" defaultValue={bill?.due_day ?? 10} invalid={Boolean(form.errorFor("due_day"))} required />
+            <DayInput id="bill-day" name="due_day" defaultValue={base?.due_day ?? 10} invalid={Boolean(form.errorFor("due_day"))} required />
           </FormField>
         </div>
 
@@ -73,7 +79,7 @@ export function BillForm({
             <SelectField
               id="bill-owner"
               name="owner_id"
-              defaultValue={bill?.owner_id ?? defaultOwnerId}
+              defaultValue={base?.owner_id ?? defaultOwnerId}
               options={members.map((m) => ({ value: m.user_id, label: m.display_name }))}
             />
           </FormField>
@@ -81,7 +87,7 @@ export function BillForm({
             <SelectField
               id="bill-account"
               name="account_id"
-              defaultValue={bill?.account_id ?? "none"}
+              defaultValue={base?.account_id ?? "none"}
               options={[{ value: "none", label: "Escolher na hora" }, ...accounts.map((a) => ({ value: a.id, label: a.name }))]}
             />
           </FormField>
@@ -92,7 +98,7 @@ export function BillForm({
             key={kind}
             id="bill-category"
             name="category_id"
-            defaultValue={bill?.kind === kind ? (bill.category_id ?? "none") : "none"}
+            defaultValue={base?.kind === kind ? (base.category_id ?? "none") : "none"}
             options={[
               { value: "none", label: "Sem categoria" },
               ...categories.filter((c) => c.kind === kind).map((c) => ({ value: c.id, label: c.name })),
@@ -106,7 +112,7 @@ export function BillForm({
               id="bill-start"
               name="start_month"
               type="month"
-              defaultValue={toMonthParam(bill?.start_month ?? currentMonth())}
+              defaultValue={toMonthParam(base?.start_month ?? currentMonth())}
               required
             />
           </FormField>

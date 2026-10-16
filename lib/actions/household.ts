@@ -8,7 +8,7 @@ import { getHousehold, getUserId } from "@/lib/data/session";
 import { createClient } from "@/lib/supabase/server";
 
 import { color, formToObject } from "./form";
-import { fromDb, fromZod, success, type ActionResult } from "./result";
+import { failure, fromDb, fromZod, success, type ActionResult } from "./result";
 
 const displayName = z.string().trim().min(1, "Diga como você quer ser chamado.").max(40, "Use até 40 letras.");
 
@@ -95,4 +95,26 @@ export async function signOutAction() {
   const supabase = await createClient();
   await supabase.auth.signOut();
   redirect("/login");
+}
+
+// Sair da casa. Se for a última pessoa, a casa é apagada.
+export async function leaveHousehold(): Promise<ActionResult> {
+  await getHousehold();
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("leave_household");
+  if (error) return fromDb(error, "Não foi possível sair da casa.");
+  revalidatePath("/", "layout");
+  redirect("/bem-vindo");
+}
+
+// Remover outra pessoa. Só quem criou a casa (o banco confere).
+export async function removeMember(userId: string): Promise<ActionResult> {
+  const ctx = await getHousehold();
+  if (!z.uuid().safeParse(userId).success) return failure("Pessoa inválida. Recarregue a página.");
+  if (ctx.household.owner_id !== ctx.userId) return failure("Só quem criou a casa pode remover pessoas.");
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("remove_household_member", { p_user_id: userId });
+  if (error) return fromDb(error, "Não foi possível remover a pessoa.");
+  revalidatePath("/", "layout");
+  return success("Pessoa removida da casa");
 }

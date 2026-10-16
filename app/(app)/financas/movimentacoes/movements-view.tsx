@@ -2,7 +2,7 @@
 
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { MoreVerticalIcon, PlusIcon, SearchIcon } from "lucide-react";
+import { MoreVerticalIcon, PlusIcon, RotateCcwIcon, SearchIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { ActivityItem } from "@/components/finance/activity-item";
@@ -10,6 +10,7 @@ import { PayBillForm } from "@/components/finance/bill-forms";
 import type { BillOccurrenceView } from "@/components/finance/bill-wall";
 import { IconBubble } from "@/components/finance/category-badge";
 import { Money } from "@/components/finance/money";
+import { ResetStatementDialog } from "@/components/finance/reset-statement";
 import { TransactionForm } from "@/components/finance/transaction-form";
 import type { AccountOption, CategoryOption, MemberOption, TransactionRow } from "@/components/finance/types";
 import { ConfirmDialog } from "@/components/forms/confirm-dialog";
@@ -67,6 +68,7 @@ export function MovementsView({
   const [dialog, setDialog] = useState<DialogState>(null);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("tudo");
+  const [resetOpen, setResetOpen] = useState(false);
   const close = () => setDialog(null);
 
   const accountName = useMemo(() => new Map(accounts.map((a) => [a.id, a.name])), [accounts]);
@@ -122,6 +124,18 @@ export function MovementsView({
           <Button onClick={() => quick.open("saida")} className="hidden h-10 rounded-full md:inline-flex">
             <PlusIcon /> Adicionar
           </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon" className="size-11 shrink-0 rounded-full bg-surface md:size-10" aria-label="Mais opções do extrato">
+                <MoreVerticalIcon />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem variant="destructive" onSelect={() => setResetOpen(true)}>
+                <RotateCcwIcon /> Resetar extrato…
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
         <div role="radiogroup" aria-label="Mostrar" className="scroll-row -mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:px-0">
           {FILTERS.map((f) => (
@@ -195,6 +209,8 @@ export function MovementsView({
           ))}
         </div>
       )}
+
+      <ResetStatementDialog open={resetOpen} onOpenChange={setResetOpen} accounts={accounts} month={month} />
 
       <ResponsiveDialog open={dialog?.type === "edit"} onOpenChange={(o) => !o && close()} title="Editar movimentação">
         {dialog?.type === "edit" ? (

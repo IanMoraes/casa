@@ -19,6 +19,7 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 // Diálogo no PC, gaveta de baixo para cima no celular.
 export function ResponsiveDialog({
@@ -28,6 +29,7 @@ export function ResponsiveDialog({
   title,
   description,
   children,
+  wide = false,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -35,6 +37,7 @@ export function ResponsiveDialog({
   title: string;
   description?: string;
   children: ReactNode;
+  wide?: boolean;
 }) {
   const isMobile = useIsMobile();
 
@@ -56,7 +59,7 @@ export function ResponsiveDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       {trigger ? <DialogTrigger asChild>{trigger}</DialogTrigger> : null}
-      <DialogContent className="rounded-2xl sm:max-w-md">
+      <DialogContent className={cn("max-h-[90dvh] overflow-y-auto rounded-2xl", wide ? "sm:max-w-2xl" : "sm:max-w-md")}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           {description ? <DialogDescription>{description}</DialogDescription> : null}

@@ -11,12 +11,12 @@ export const metadata: Metadata = { title: "Tarefas" };
 
 export default async function TasksPage() {
   const ctx = await getHousehold();
-  const { lanes, tasks } = await getBoard();
+  const { lanes, tasks, items } = await getBoard();
 
   return (
     <>
-      <PageHeader title="Tarefas" description="Arraste pelas alças para mudar a ordem ou a lista." />
-      <Board lanes={lanes} tasks={tasks} members={toMemberOptions(ctx.members)} meId={ctx.userId} />
+      <PageHeader title="Tarefas" description="Toque num cartão para ver os detalhes e o checklist. Para mover, arraste (no celular, segure o cartão)." />
+      <Board lanes={lanes} tasks={tasks} items={items} members={toMemberOptions(ctx.members)} meId={ctx.userId} />
     </>
   );
 }

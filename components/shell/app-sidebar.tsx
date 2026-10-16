@@ -146,7 +146,7 @@ function UserMenu({ me, email }: { me: Me; email: string }) {
             <MoonIcon /> Escuro
           </DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="system">
-            <MonitorIcon /> Igual ao aparelho
+            <MonitorIcon /> Automático
           </DropdownMenuRadioItem>
         </DropdownMenuRadioGroup>
         <DropdownMenuSeparator />

@@ -16,6 +16,7 @@ import { AccountForm, AdjustBalanceForm, TransferForm } from "@/components/finan
 import { IconBubble } from "@/components/finance/category-badge";
 import { Money } from "@/components/finance/money";
 import { PrivacyToggle } from "@/components/finance/privacy";
+import { ResetStatementDialog } from "@/components/finance/reset-statement";
 import { accountKindLabel, type AccountOption, type MemberOption } from "@/components/finance/types";
 import { ConfirmDialog } from "@/components/forms/confirm-dialog";
 import { ResponsiveDialog } from "@/components/forms/responsive-dialog";
@@ -31,6 +32,7 @@ import {
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
 import { cn } from "@/lib/utils";
 import { archiveAccount, deleteAccount } from "@/lib/actions/finance";
+import { currentMonth } from "@/lib/dates";
 import { sum } from "@/lib/money";
 
 type DialogState =
@@ -39,6 +41,7 @@ type DialogState =
   | { type: "adjust"; account: AccountOption }
   | { type: "transfer" }
   | { type: "delete"; account: AccountOption }
+  | { type: "reset"; account: AccountOption }
   | null;
 
 export function AccountsView({
@@ -167,6 +170,15 @@ export function AccountsView({
         {dialog?.type === "transfer" ? <TransferForm accounts={active} members={members} onDone={close} /> : null}
       </ResponsiveDialog>
 
+      <ResetStatementDialog
+        open={dialog?.type === "reset"}
+        onOpenChange={(o) => !o && close()}
+        accounts={accounts}
+        month={currentMonth()}
+        presetAccountId={dialog?.type === "reset" ? dialog.account.id : undefined}
+        presetAllMonths
+      />
+
       <ConfirmDialog
         open={dialog?.type === "delete"}
         onOpenChange={(o) => !o && close()}
@@ -213,6 +225,7 @@ function AccountCard({ account, onAction }: { account: AccountOption; onAction: 
             <DropdownMenuItem onSelect={() => onAction({ type: "adjust", account })}>Ajustar saldo</DropdownMenuItem>
             <DropdownMenuItem onSelect={() => onAction({ type: "edit", account })}>Editar</DropdownMenuItem>
             <DropdownMenuItem onSelect={toggleArchive}>{account.archived ? "Reativar" : "Arquivar"}</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => onAction({ type: "reset", account })}>Resetar extrato…</DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem variant="destructive" onSelect={() => onAction({ type: "delete", account })}>
               Apagar

@@ -4,7 +4,9 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { CATEGORY_ICONS } from "@/lib/categories";
+import { getTransactions } from "@/lib/data/finance";
 import { getHousehold } from "@/lib/data/session";
+import { addMonths, monthOf } from "@/lib/dates";
 import { round2 } from "@/lib/money";
 import { createClient } from "@/lib/supabase/server";
 
@@ -464,4 +466,110 @@ export async function undoImport(batchId: string): Promise<ActionResult> {
   if (error) return fromDb(error, "Não foi possível desfazer a importação.");
   refresh();
   return success("Importação desfeita");
+}
+
+// ---------------------------------------------------------------------------
+// Contexto da importação: o que já existe na conta e as contas fixas atuais
+// ---------------------------------------------------------------------------
+
+export type ImportContext = {
+  importedIds: string[];
+  // Lançamentos da conta de 12 meses antes do arquivo até um dia depois dele.
+  existing: {
+    occurredOn: string;
+    amount: number;
+    description: string;
+    externalId: string | null;
+    categoryId: string | null;
+  }[];
+  billDescriptions: string[];
+};
+
+export async function loadImportContext(
+  accountId: string,
+  externalIds: string[],
+  from: string,
+  to: string,
+): Promise<ImportContext> {
+  const parsed = z
+    .object({
+      accountId: z.uuid(),
+      externalIds: z.array(z.string().max(300)).max(6000),
+      from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    })
+    .safeParse({ accountId, externalIds, from, to });
+  if (!parsed.success) return { importedIds: [], existing: [], billDescriptions: [] };
+
+  const supabase = await createClient();
+  const [importedIds, history, bills] = await Promise.all([
+    findImported(parsed.data.accountId, parsed.data.externalIds),
+    getTransactions({
+      from: addMonths(monthOf(parsed.data.from), -12),
+      to: addDaysIso(parsed.data.to, 1),
+      accountIds: [parsed.data.accountId],
+    }),
+    supabase.from("recurring_bills").select("description"),
+  ]);
+
+  return {
+    importedIds,
+    existing: history
+      .filter((t) => t.kind === "entrada" || t.kind === "saida")
+      .map((t) => ({
+        occurredOn: t.occurred_on,
+        amount: t.amount,
+        description: t.description,
+        externalId: t.external_id,
+        categoryId: t.category_id,
+      })),
+    billDescriptions: (bills.data ?? []).map((b) => b.description),
+  };
+}
+
+function addDaysIso(iso: string, days: number) {
+  const [y, m, d] = iso.split("-").map(Number);
+  const date = new Date(Date.UTC(y, m - 1, d + days));
+  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}-${String(date.getUTCDate()).padStart(2, "0")}`;
+}
+
+// ---------------------------------------------------------------------------
+// Resetar extrato (por mês, por conta, ou tudo)
+// ---------------------------------------------------------------------------
+
+const resetSchema = z.object({
+  accountId: z.uuid().nullable(),
+  month: z
+    .string()
+    .regex(/^\d{4}-\d{2}-01$/)
+    .nullable(),
+});
+
+export type ResetScope = z.input<typeof resetSchema>;
+
+// Quantos lançamentos seriam apagados (não apaga nada).
+export async function previewResetStatement(scope: ResetScope): Promise<{ ok: true; count: number } | { ok: false; error: string }> {
+  const parsed = resetSchema.safeParse(scope);
+  if (!parsed.success) return { ok: false, error: "Escolha o mês e a conta de novo." };
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("reset_statement", {
+    p_account_id: parsed.data.accountId,
+    p_month: parsed.data.month,
+    p_dry_run: true,
+  });
+  if (error) return { ok: false, error: `Não foi possível contar os lançamentos (${error.message}).` };
+  return { ok: true, count: data };
+}
+
+export async function resetStatement(scope: ResetScope): Promise<ActionResult> {
+  const parsed = resetSchema.safeParse(scope);
+  if (!parsed.success) return fromZod(parsed.error);
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("reset_statement", {
+    p_account_id: parsed.data.accountId,
+    p_month: parsed.data.month,
+  });
+  if (error) return fromDb(error, "Não foi possível resetar o extrato.");
+  refresh();
+  return success(data === 0 ? "Não havia nada para apagar" : `${data} ${data === 1 ? "lançamento apagado" : "lançamentos apagados"}`);
 }

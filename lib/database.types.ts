@@ -20,18 +20,21 @@ export type Database = {
           id: string;
           name: string;
           invite_code: string;
+          owner_id: string | null;
           created_at: string;
         };
         Insert: {
           id?: string;
           name?: string;
           invite_code?: string;
+          owner_id?: string | null;
           created_at?: string;
         };
         Update: {
           id?: string;
           name?: string;
           invite_code?: string;
+          owner_id?: string | null;
           created_at?: string;
         };
         Relationships: [];
@@ -311,6 +314,7 @@ export type Database = {
           assignee_id: string | null;
           due_on: string | null;
           done: boolean;
+          label_color: string | null;
           created_at: string;
         };
         Insert: {
@@ -323,6 +327,7 @@ export type Database = {
           assignee_id?: string | null;
           due_on?: string | null;
           done?: boolean;
+          label_color?: string | null;
           created_at?: string;
         };
         Update: {
@@ -335,6 +340,37 @@ export type Database = {
           assignee_id?: string | null;
           due_on?: string | null;
           done?: boolean;
+          label_color?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      task_items: {
+        Row: {
+          id: string;
+          household_id: string;
+          task_id: string;
+          title: string;
+          done: boolean;
+          position: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          household_id?: string;
+          task_id: string;
+          title: string;
+          done?: boolean;
+          position: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          household_id?: string;
+          task_id?: string;
+          title?: string;
+          done?: boolean;
+          position?: number;
           created_at?: string;
         };
         Relationships: [];
@@ -359,6 +395,18 @@ export type Database = {
       join_household: {
         Args: { p_invite_code: string; p_display_name: string };
         Returns: string;
+      };
+      reset_statement: {
+        Args: { p_account_id?: string | null; p_month?: string | null; p_dry_run?: boolean };
+        Returns: number;
+      };
+      leave_household: {
+        Args: Record<string, never>;
+        Returns: string;
+      };
+      remove_household_member: {
+        Args: { p_user_id: string };
+        Returns: undefined;
       };
       create_transfer: {
         Args: {

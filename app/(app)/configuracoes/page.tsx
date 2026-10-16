@@ -18,6 +18,7 @@ export default async function SettingsPage() {
         inviteCode={ctx.household.invite_code}
         members={toMemberOptions(ctx.members)}
         meId={ctx.userId}
+        ownerId={ctx.household.owner_id}
       />
     </>
   );

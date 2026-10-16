@@ -7,16 +7,19 @@ import { createClient } from "@/lib/supabase/server";
 
 export type Lane = Tables<"lanes">;
 export type Task = Tables<"tasks">;
+export type TaskItem = Tables<"task_items">;
 
 export async function getBoard() {
   const supabase = await createClient();
-  const [lanes, tasks] = await Promise.all([
+  const [lanes, tasks, items] = await Promise.all([
     supabase.from("lanes").select("*").order("position"),
     supabase.from("tasks").select("*").order("position"),
+    supabase.from("task_items").select("*").order("position"),
   ]);
   if (lanes.error) throw new Error(`Não foi possível carregar as listas: ${lanes.error.message}`);
   if (tasks.error) throw new Error(`Não foi possível carregar as tarefas: ${tasks.error.message}`);
-  return { lanes: lanes.data, tasks: tasks.data };
+  if (items.error) throw new Error(`Não foi possível carregar as subtarefas: ${items.error.message}`);
+  return { lanes: lanes.data, tasks: tasks.data, items: items.data };
 }
 
 export const getLanes = cache(async () => {
