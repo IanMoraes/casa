@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Componentes gerados pelo shadcn e pelo registry do Dice UI: mantidos
+    // como vieram para facilitar atualizar com `shadcn add`.
+    "components/ui/**",
   ]),
 ]);
 

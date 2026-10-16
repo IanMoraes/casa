@@ -1,26 +1,250 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Tema "celeste": fundo cinza-azulado claro, cartões brancos bem arredondados,
+ * azul-celeste como cor principal e categorias coloridas.
+ * Verde = entrou dinheiro. Âmbar = vence logo. Vermelho = atrasado ou erro.
+ * Os azuis com texto branco passam no contraste AA (≥ 4,5:1).
+ * As cores dos gráficos foram validadas para daltonismo nos dois temas.
+ */
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-onest);
+  --font-heading: var(--font-onest);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+
+  --color-surface: var(--surface);
+  --color-hero: var(--hero);
+  --color-hero-strong: var(--hero-strong);
+  --color-hero-foreground: var(--hero-foreground);
+  --color-income: var(--income);
+  --color-income-foreground: var(--income-foreground);
+  --color-income-soft: var(--income-soft);
+  --color-expense-soft: var(--expense-soft);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-soft: var(--warning-soft);
+  --color-destructive-soft: var(--destructive-soft);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.35);
+  --radius-2xl: calc(var(--radius) * 1.7);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+
+  --text-display: 2rem;
+  --text-display--line-height: 1.1;
+
+  --shadow-card: 0 1px 2px rgb(16 24 40 / 0.04), 0 1px 3px rgb(16 24 40 / 0.06);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+:root {
+  --radius: 0.75rem;
+
+  --background: #eef2f6;
+  --foreground: #1c2433;
+  --surface: #ffffff;
+  --card: #ffffff;
+  --card-foreground: #1c2433;
+  --popover: #ffffff;
+  --popover-foreground: #1c2433;
+  --primary: #0078c8;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f4f8;
+  --secondary-foreground: #1c2433;
+  --muted: #f1f4f8;
+  --muted-foreground: #5f6b7a;
+  --accent: #e6f3fc;
+  --accent-foreground: #005a96;
+  --destructive: #e03131;
+  --destructive-soft: #fdecec;
+  --border: #e3e8ee;
+  --input: #d5dce4;
+  --ring: #0078c8;
+
+  /* Faixa azul do topo (texto branco ≥ 4,6:1) */
+  --hero: #0078c8;
+  --hero-strong: #005fa3;
+  --hero-foreground: #ffffff;
+
+  --income: #00a650;
+  --income-foreground: #00873f;
+  --income-soft: #e5f6ec;
+  --expense-soft: #fdecec;
+  --warning: #f59f00;
+  --warning-foreground: #8f5b00;
+  --warning-soft: #fff4dc;
+
+  --chart-1: #0078c8; /* saídas / série principal */
+  --chart-2: #e8590c; /* segunda pessoa */
+  --chart-3: #00a650; /* entradas */
+  --chart-4: #0078c8;
+  --chart-5: #0078c8;
+
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1c2433;
+  --sidebar-primary: #0078c8;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e6f3fc;
+  --sidebar-accent-foreground: #005a96;
+  --sidebar-border: #e3e8ee;
+  --sidebar-ring: #0078c8;
+}
+
+.dark {
+  --background: #0f1522;
+  --foreground: #e8edf5;
+  --surface: #1a2235;
+  --card: #1a2235;
+  --card-foreground: #e8edf5;
+  --popover: #1e2740;
+  --popover-foreground: #e8edf5;
+  --primary: #3a9bf0;
+  --primary-foreground: #06223d;
+  --secondary: #222c42;
+  --secondary-foreground: #e8edf5;
+  --muted: #222c42;
+  --muted-foreground: #9aa6b8;
+  --accent: #16314f;
+  --accent-foreground: #b9dcfa;
+  --destructive: #ff6b6b;
+  --destructive-soft: #3a1f26;
+  --border: #2a3550;
+  --input: #34415f;
+  --ring: #3a9bf0;
+
+  --hero: #0b5e9c;
+  --hero-strong: #0a3f6b;
+  --hero-foreground: #ffffff;
+
+  --azulejo-ink: #06223d;
+  --income: #25a866;
+  --income-foreground: #4cc38a;
+  --income-soft: #15332a;
+  --expense-soft: #3a1f26;
+  --warning: #f5b33d;
+  --warning-foreground: #f5c56b;
+  --warning-soft: #3a2e14;
+
+  --chart-1: #3a8fe0;
+  --chart-2: #e8783a;
+  --chart-3: #25a866;
+  --chart-4: #3a8fe0;
+  --chart-5: #3a8fe0;
+
+  --sidebar: #141b2b;
+  --sidebar-foreground: #e8edf5;
+  --sidebar-primary: #3a9bf0;
+  --sidebar-primary-foreground: #06223d;
+  --sidebar-accent: #16314f;
+  --sidebar-accent-foreground: #b9dcfa;
+  --sidebar-border: #222c42;
+  --sidebar-ring: #3a9bf0;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+    -webkit-tap-highlight-color: transparent;
+    /* Nada de rolagem lateral no celular. */
+    overflow-x: clip;
+  }
+  body {
+    @apply bg-background text-foreground;
+    overflow-x: clip;
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-heading tracking-[-0.015em];
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  /* Desenho do ladrilho da marca: branco no claro, escuro sobre o azul do tema escuro. */
+  .fill-azulejo-ink {
+    fill: var(--azulejo-ink, #fff);
+  }
+  /* Cartão padrão do app. */
+  .card-surface {
+    background-color: var(--surface);
+    border-radius: calc(var(--radius) * 1.35);
+    box-shadow: var(--shadow-card);
+  }
+  /* Rolagem horizontal sem barra (carrosséis no celular). */
+  .scroll-row {
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .scroll-row::-webkit-scrollbar {
+    display: none;
+  }
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* O cartão "assenta" quando a conta é paga. */
+@keyframes paid-pop {
+  0% {
+    transform: scale(0.96);
+  }
+  60% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-bill-status="paga"][data-just-paid="true"] {
+    animation: paid-pop 380ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
 }
